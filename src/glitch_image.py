@@ -1,13 +1,13 @@
-from PIL import Image
+# src/glitch_image.py
 import sys
+import math
+from PIL import Image
+from core import pack_blob, unpack_blob
 
 def encode(file_path, output_image):
-    with open(file_path, 'rb') as f:
-        data = f.read()
-    header = len(data).to_bytes(4, 'big')
-    payload = header + data
-    padded_len = (len(payload) + 2) // 3 * 3
-    payload = payload.ljust(padded_len, b'\x00')
+    blob = pack_blob(file_path)
+    padded_len = (len(blob) + 2) // 3 * 3
+    payload = blob.ljust(padded_len, b'\x00')
     pixels = [(payload[i], payload[i+1], payload[i+2]) for i in range(0, len(payload), 3)]
     width = int(len(pixels)**0.5) + 1
     height = (len(pixels) + width - 1) // width
@@ -19,10 +19,9 @@ def encode(file_path, output_image):
 def decode(image_path, output_file):
     img = Image.open(image_path)
     flat = bytearray(img.tobytes())
-    length = int.from_bytes(flat[:4], 'big')
-    data = flat[4:4+length]
+    _, raw = unpack_blob(bytes(flat))
     with open(output_file, 'wb') as f:
-        f.write(data)
+        f.write(raw)
 
 if __name__ == '__main__':
     if len(sys.argv) > 3:

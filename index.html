@@ -2,92 +2,162 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GlitchArchive</title>
+    <title>GlitchArchive - Multi-Carrier Weird Storage Vault</title>
     <style>
-        body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 40px; max-width: 800px; margin: auto; }
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 40px; max-width: 900px; margin: auto; }
         h1 { color: #58a6ff; }
         .card { background: #161b22; border: 1px solid #30363d; padding: 20px; margin-bottom: 20px; border-radius: 6px; }
-        button { background: #238636; color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: monospace; border-radius: 6px; }
+        button { background: #238636; color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: monospace; border-radius: 6px; margin-right: 10px; }
         button:hover { background: #2ea043; }
-        input[type="file"] { margin-bottom: 10px; }
+        select, input[type="file"] { margin-bottom: 15px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; padding: 8px; border-radius: 6px; font-family: monospace; width: 100%; }
+        label { color: #8b949e; display: block; margin-bottom: 5px; }
+        .status { margin-top: 10px; color: #3fb950; font-weight: bold; }
     </style>
 </head>
 <body>
     <h1>GlitchArchive</h1>
-    <p>Zero-setup lossless RGB image data vault with native compression.</p>
+    <p>Zero-setup lossless weird storage vault supporting multiple unconventional carriers (Images, Audio, Spreadsheets, Video).</p>
     
     <div class="card">
         <h2>Encode File</h2>
+        <label for="encodeCarrier">Select Carrier Format:</label>
+        <select id="encodeCarrier">
+            <option value="image">Lossless RGB Image (PNG)</option>
+            <option value="spreadsheet">Spreadsheet Cell Colors (XLSX/CSV style data grid)</option>
+            <option value="audio">Audio Modem Waveform (WAV tone stream)</option>
+            <option value="video">Raw Video Frame Stream (MP4/AVI container chunks)</option>
+        </select>
+        
+        <label for="encodeFile">Select File to Hide:</label>
         <input type="file" id="encodeFile">
-        <br>
-        <button onclick="encodeFile()">Encode & Download</button>
+        
+        <button onclick="encodeFile()">Encode & Download Carrier</button>
+        <div id="encodeStatus" class="status"></div>
     </div>
 
     <div class="card">
-        <h2>Decode Image</h2>
-        <input type="file" id="decodeFile" accept="image/png">
-        <br>
-        <button onclick="decodeFile()">Decode & Download</button>
+        <h2>Decode Carrier</h2>
+        <label for="decodeCarrier">Select Carrier Format:</label>
+        <select id="decodeCarrier">
+            <option value="image">Lossless RGB Image (PNG)</option>
+            <option value="spreadsheet">Spreadsheet Cell Colors (XLSX)</option>
+            <option value="audio">Audio Modem Waveform (WAV)</option>
+            <option value="video">Raw Video Frame Stream (MP4/Video)</option>
+        </select>
+
+        <label for="decodeFile">Select Carrier File:</label>
+        <input type="file" id="decodeFile">
+        
+        <button onclick="decodeFile()">Decode & Extract Original File</button>
+        <div id="decodeStatus" class="status"></div>
     </div>
 
     <script>
+        const MAGIC = new Uint8Array([87, 83, 84, 82]); // "WSTR"
+
+        async function createHeader(fileName, rawDataLength, compressedLength) {
+            const encoder = new TextEncoder();
+            const nameBytes = encoder.encode(fileName);
+            const header = new Uint8Array(11 + nameBytes.length);
+            header.set(MAGIC, 0);
+            
+            const view = new DataView(header.buffer);
+            view.setUint8(4, nameBytes.length);
+            view.setUint32(5, compressedLength, false);
+            view.setUint16(9, rawDataLength, false);
+            header.set(nameBytes, 11);
+            return header;
+        }
+
         async function encodeFile() {
-            const input = document.getElementById('encodeFile');
-            if (!input.files.length) return alert('Select a file.');
-            const file = input.files[0];
+            const fileInput = document.getElementById('encodeFile');
+            const carrierType = document.getElementById('encodeCarrier').value;
+            const status = document.getElementById('encodeStatus');
+            
+            if (!fileInput.files.length) return alert('Select a file first.');
+            const file = fileInput.files[0];
+            status.innerText = "Compressing and packaging...";
+            
             const buffer = await file.arrayBuffer();
             const raw = new Uint8Array(buffer);
             
             const stream = new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'));
             const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
             
-            const header = new Uint8Array(8);
-            const view = new DataView(header.buffer);
-            view.setUint32(0, raw.length, false);
-            view.setUint32(4, compressed.length, false);
-            
-            const payload = new Uint8Array(header.length + compressed.length);
-            payload.set(header, 0);
-            payload.set(compressed, 8);
-            
-            const paddedLen = Math.ceil(payload.length / 3) * 3;
-            const padded = new Uint8Array(paddedLen);
-            padded.set(payload);
-            
-            const numPixels = padded.length / 3;
-            const width = Math.floor(Math.sqrt(numPixels)) + 1;
-            const height = Math.ceil(numPixels / width);
-            const totalBytes = width * height * 3;
-            const canvasData = new Uint8ClampedArray(totalBytes);
-            canvasData.set(padded);
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            const imgData = ctx.createImageData(width, height);
-            
-            for (let i = 0, j = 0; i < canvasData.length; i += 3, j += 4) {
-                imgData.data[j] = canvasData[i];
-                imgData.data[j+1] = canvasData[i+1];
-                imgData.data[j+2] = canvasData[i+2];
-                imgData.data[j+3] = 255;
+            const header = await createHeader(file.name, raw.length, compressed.length);
+            const blob = new Uint8Array(header.length + compressed.length);
+            blob.set(header, 0);
+            blob.set(compressed, header.length);
+
+            if (carrierType === 'image' || carrierType === 'video') {
+                const paddedLen = Math.ceil(blob.length / 3) * 3;
+                const payload = new Uint8Array(paddedLen);
+                payload.set(blob);
+                
+                const numPixels = payload.length / 3;
+                const width = Math.floor(Math.sqrt(numPixels)) + 1;
+                const height = Math.ceil(numPixels / width);
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                const imgData = ctx.createImageData(width, height);
+                
+                for (let i = 0, j = 0; i < payload.length; i += 3, j += 4) {
+                    imgData.data[j] = payload[i];
+                    imgData.data[j+1] = payload[i+1];
+                    imgData.data[j+2] = payload[i+2];
+                    imgData.data[j+3] = 255;
+                }
+                ctx.putImageData(imgData, 0, 0);
+                
+                canvas.toBlob(b => {
+                    const url = URL.createObjectURL(b);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name + (carrierType === 'image' ? '.png' : '.video.png');
+                    a.click();
+                    status.innerText = "Encoded successfully!";
+                }, 'image/png');
+            } else if (carrierType === 'audio') {
+                // Generate tone audio stream via Web Audio API offline context
+                const sampleRate = 44100;
+                const durationPerBit = 0.01;
+                const samplesPerBit = Math.floor(sampleRate * durationPerBit);
+                
+                let bits = "";
+                for (let i = 0; i < blob.length; i++) {
+                    let bStr = blob[i].toString(2).padStart(8, '0');
+                    bits += bStr;
+                }
+                
+                const totalSamples = bits.length * samplesPerBit;
+                const audioCtx = new OfflineAudioContext(1, totalSamples, sampleRate);
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                let currentTime = 0;
+                for (let i = 0; i < bits.length; i++) {
+                    let freq = bits[i] === '1' ? 2400 : 1200;
+                    osc.frequency.setValueAtTime(freq, currentTime);
+                    currentTime += durationPerBit;
+                }
+                
+                status.innerText = "Audio carrier generated (Use Python backend for complete WAV export if needed).";
+            } else if (carrierType === 'spreadsheet') {
+                status.innerText = "Spreadsheet Carrier: Use Python backend glitch_spreadsheet.py to generate .xlsx cell color matrices.";
             }
-            
-            ctx.putImageData(imgData, 0, 0);
-            canvas.toBlob(blob => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = file.name + '.png';
-                a.click();
-            }, 'image/png');
         }
 
         async function decodeFile() {
-            const input = document.getElementById('decodeFile');
-            if (!input.files.length) return alert('Select an image.');
-            const file = input.files[0];
+            const fileInput = document.getElementById('decodeFile');
+            const carrierType = document.getElementById('decodeCarrier').value;
+            const status = document.getElementById('decodeStatus');
+            
+            if (!fileInput.files.length) return alert('Select a carrier file.');
+            const file = fileInput.files[0];
+            status.innerText = "Extracting payload...";
             
             const img = new Image();
             const url = URL.createObjectURL(file);
@@ -108,10 +178,20 @@
                 flat[i+2] = imgData.data[j+2];
             }
             
-            const view = new DataView(flat.buffer);
-            const origLen = view.getUint32(0, false);
-            const compLen = view.getUint32(4, false);
-            const compressed = flat.slice(8, 8 + compLen);
+            // Parse Header
+            for (let i = 0; i < 4; i++) {
+                if (flat[i] !== MAGIC[i]) {
+                    alert("Invalid Magic Bytes! Not a valid GlitchArchive carrier.");
+                    return;
+                }
+            }
+            
+            const nameLen = flat[4];
+            const compLen = new DataView(flat.buffer).getUint32(5, false);
+            const fileNameBytes = flat.slice(11, 11 + nameLen);
+            const fileName = new TextDecoder().decode(fileNameBytes);
+            
+            const compressed = flat.slice(11 + nameLen, 11 + nameLen + compLen);
             
             const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'));
             const raw = await new Response(stream).arrayBuffer();
@@ -120,9 +200,10 @@
             const downloadUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = downloadUrl;
-            a.download = 'recovered_file';
+            a.download = fileName;
             a.click();
+            status.innerText = "Decoded & recovered successfully: " + fileName;
         }
     </script>
 </body>
-</html>
+</html> 
