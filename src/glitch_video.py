@@ -6,8 +6,12 @@ from core import pack_blob, unpack_blob
 
 def encode(file_path, video_path, fps=30):
     blob = pack_blob(file_path)
-    padded_len = (len(blob) + 2) // 3 * 3
-    payload = blob.ljust(padded_len, b'\x00')
+    # Store exact length prefix (4 bytes) before payload so decoder knows where valid data ends
+    length_prefix = len(blob).to_bytes(4, 'big')
+    full_payload = length_prefix + blob
+    
+    padded_len = (len(full_payload) + 2) // 3 * 3
+    payload = full_payload.ljust(padded_len, b'\x00')
     
     width, height = 320, 240
     frame_bytes = width * height * 3
@@ -20,25 +24,29 @@ def encode(file_path, video_path, fps=30):
         chunk = payload[f * frame_bytes : (f + 1) * frame_bytes]
         chunk = chunk.ljust(frame_bytes, b'\x00')
         frame = np.frombuffer(chunk, dtype=np.uint8).reshape((height, width, 3))
-        # OpenCV uses BGR, convert to RGB so standard decoding matches
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        out.write(frame_rgb)
+        out.write(frame)
     
     out.release()
 
 def decode(video_path, output_file):
     cap = cv2.VideoCapture(video_path)
-    blob = bytearray()
+    raw_bytes = bytearray()
     
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        blob.extend(frame_rgb.tobytes())
+        raw_bytes.extend(frame.tobytes())
     
     cap.release()
-    _, raw = unpack_blob(bytes(blob))
+    
+    if len(raw_bytes) < 4:
+        raise ValueError("Video file too short or empty")
+        
+    payload_len = int.from_bytes(raw_bytes[:4], 'big')
+    blob = bytes(raw_bytes[4 : 4 + payload_len])
+    
+    _, raw = unpack_blob(blob)
     with open(output_file, 'wb') as f:
         f.write(raw)
 
