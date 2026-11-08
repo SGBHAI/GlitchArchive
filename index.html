@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GlitchArchive - Zero-Setup Web Demo</title>
+    <style>
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 40px; max-width: 800px; margin: auto; }
+        h1 { color: #58a6ff; }
+        .card { background: #161b22; border: 1px solid #30363d; padding: 20px; margin-bottom: 20px; border-radius: 6px; }
+        button { background: #238636; color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: monospace; border-radius: 6px; }
+        button:hover { background: #2ea043; }
+        input[type="file"] { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>GlitchArchive</h1>
+    <p>Encode any file into a lossless RGB PNG image and decode it back instantly in your browser with zero setup.</p>
+    
+    <div class="card">
+        <h2>Encode File to Image</h2>
+        <input type="file" id="encodeFile">
+        <br>
+        <button onclick="encodeFile()">Encode & Download PNG</button>
+    </div>
+
+    <div class="card">
+        <h2>Decode Image to File</h2>
+        <input type="file" id="decodeFile" accept="image/png">
+        <br>
+        <button onclick="decodeFile()">Decode & Download File</button>
+    </div>
+
+    <script>
+        async function encodeFile() {
+            const input = document.getElementById('encodeFile');
+            if (!input.files.length) return alert('Select a file first.');
+            const file = input.files[0];
+            const buffer = await file.arrayBuffer();
+            const data = new Uint8Array(buffer);
+            
+            const header = new Uint8Array(4);
+            new DataView(header.buffer).setUint32(0, data.length, false);
+            
+            const payload = new Uint8Array(header.length + data.length);
+            payload.set(header, 0);
+            payload.set(data, 4);
+            
+            const paddedLen = Math.ceil(payload.length / 3) * 3;
+            const padded = new Uint8Array(paddedLen);
+            padded.set(payload);
+            
+            const numPixels = padded.length / 3;
+            const width = Math.floor(Math.sqrt(numPixels)) + 1;
+            const height = Math.ceil(numPixels / width);
+            const totalBytes = width * height * 3;
+            const canvasData = new Uint8ClampedArray(totalBytes);
+            canvasData.set(padded);
+            for (let i = padded.length; i < totalBytes; i++) {
+                canvasData[i] = 0;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.createImageData(width, height);
+            
+            for (let i = 0, j = 0; i < canvasData.length; i += 3, j += 4) {
+                imgData.data[j] = canvasData[i];
+                imgData.data[j+1] = canvasData[i+1];
+                imgData.data[j+2] = canvasData[i+2];
+                imgData.data[j+3] = 255;
+            }
+            
+            ctx.putImageData(imgData, 0, 0);
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name + '.png';
+                a.click();
+            }, 'image/png');
+        }
+
+        async function decodeFile() {
+            const input = document.getElementById('decodeFile');
+            if (!input.files.length) return alert('Select an archive image first.');
+            const file = input.files[0];
+            
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.src = url;
+            await img.decode();
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0, 0, img.width, img.height);
+            
+            const flat = new Uint8Array(img.width * img.height * 3);
+            for (let i = 0, j = 0; i < flat.length; i += 3, j += 4) {
+                flat[i] = imgData.data[j];
+                flat[i+1] = imgData.data[j+1];
+                flat[i+2] = imgData.data[j+2];
+            }
+            
+            const length = new DataView(flat.buffer).getUint32(0, false);
+            const data = flat.slice(4, 4 + length);
+            
+            const blob = new Blob([data]);
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'recovered_file';
+            a.click();
+        }
+    </script>
+</body>
+</html>
