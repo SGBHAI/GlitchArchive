@@ -1,4 +1,3 @@
-# src/glitch_video.py
 import sys
 import math
 import cv2
@@ -21,7 +20,9 @@ def encode(file_path, video_path, fps=30):
         chunk = payload[f * frame_bytes : (f + 1) * frame_bytes]
         chunk = chunk.ljust(frame_bytes, b'\x00')
         frame = np.frombuffer(chunk, dtype=np.uint8).reshape((height, width, 3))
-        out.write(frame)
+        # OpenCV uses BGR, convert to RGB so standard decoding matches
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        out.write(frame_rgb)
     
     out.release()
 
@@ -33,7 +34,8 @@ def decode(video_path, output_file):
         ret, frame = cap.read()
         if not ret:
             break
-        blob.extend(frame.tobytes())
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        blob.extend(frame_rgb.tobytes())
     
     cap.release()
     _, raw = unpack_blob(bytes(blob))
