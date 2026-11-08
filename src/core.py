@@ -1,4 +1,3 @@
-# src/core.py
 import zlib
 import struct
 from pathlib import Path

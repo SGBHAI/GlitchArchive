@@ -1,4 +1,3 @@
-# src/glitch_image.py
 import sys
 import math
 from PIL import Image

@@ -1,4 +1,3 @@
-# src/glitch_spreadsheet.py
 import sys
 import openpyxl
 from core import pack_blob, unpack_blob

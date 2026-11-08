@@ -1,4 +1,3 @@
-# src/glitch_audio.py
 import sys
 import math
 import wave

@@ -1,4 +1,3 @@
-# src/glitch_chess.py
 import sys
 import math
 import chess
