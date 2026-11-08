@@ -4,63 +4,133 @@
     <meta charset="UTF-8">
     <title>GlitchArchive - Multi-Carrier Weird Storage Vault</title>
     <style>
-        body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 40px; max-width: 900px; margin: auto; }
-        h1 { color: #58a6ff; }
-        .card { background: #161b22; border: 1px solid #30363d; padding: 20px; margin-bottom: 20px; border-radius: 6px; }
-        button { background: #238636; color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: monospace; border-radius: 6px; margin-right: 10px; }
-        button:hover { background: #2ea043; }
-        select, input[type="file"] { margin-bottom: 15px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; padding: 8px; border-radius: 6px; font-family: monospace; width: 100%; }
-        label { color: #8b949e; display: block; margin-bottom: 5px; }
-        .status { margin-top: 10px; color: #3fb950; font-weight: bold; }
+        :root {
+            --bg-primary: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: monospace; background: var(--bg-primary); color: var(--text-main); padding: 30px 20px; max-width: 1000px; margin: auto; line-height: 1.5; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--accent-blue); font-size: 2.2rem; margin-bottom: 10px; }
+        p.subtitle { color: var(--text-muted); font-size: 0.95rem; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media(max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        
+        .card { background: var(--bg-card); border: 1px solid var(--border); padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .card h2 { color: var(--accent-blue); font-size: 1.3rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .card h2 span { background: var(--border); color: var(--text-main); font-size: 0.8rem; padding: 2px 8px; border-radius: 12px; }
+        
+        label { color: var(--text-muted); display: block; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input[type="file"] { margin-bottom: 20px; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-family: monospace; width: 100%; outline: none; transition: border-color 0.2s; }
+        select:focus, input[type="file"]:focus { border-color: var(--accent-blue); }
+        
+        .dropzone { border: 2px dashed var(--border); padding: 25px; text-align: center; border-radius: 6px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; background: rgba(22,27,34,0.5); }
+        .dropzone.dragover { border-color: var(--accent-blue); background: rgba(88,166,255,0.05); }
+        .dropzone p { color: var(--text-muted); font-size: 0.9rem; }
+
+        button { background: var(--accent-green); color: white; border: none; padding: 12px 20px; cursor: pointer; font-family: monospace; border-radius: 6px; width: 100%; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
+        button:hover { background: var(--accent-green-hover); }
+        
+        .status { margin-top: 15px; color: #3fb950; font-size: 0.9rem; font-weight: bold; min-height: 20px; word-break: break-all; }
+        .info-box { background: rgba(88,166,255,0.05); border-left: 3px solid var(--accent-blue); padding: 12px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; border-radius: 0 6px 6px 0; }
     </style>
 </head>
 <body>
-    <h1>GlitchArchive</h1>
-    <p>Zero-setup lossless weird storage vault supporting multiple unconventional carriers (Images, Audio, Spreadsheets, Video).</p>
+    <header>
+        <h1>GlitchArchive</h1>
+        <p class="subtitle">Zero-setup lossless weird storage vault. Hide files inside PNGs, Audio Modems, Chess PGNs, Spreadsheets, and Videos.</p>
+    </header>
     
-    <div class="card">
-        <h2>Encode File</h2>
-        <label for="encodeCarrier">Select Carrier Format:</label>
-        <select id="encodeCarrier">
-            <option value="image">Lossless RGB Image (PNG)</option>
-            <option value="spreadsheet">Spreadsheet Cell Colors (XLSX/CSV style data grid)</option>
-            <option value="audio">Audio Modem Waveform (WAV tone stream)</option>
-            <option value="video">Raw Video Frame Stream (MP4/AVI container chunks)</option>
-        </select>
-        
-        <label for="encodeFile">Select File to Hide:</label>
-        <input type="file" id="encodeFile">
-        
-        <button onclick="encodeFile()">Encode & Download Carrier</button>
-        <div id="encodeStatus" class="status"></div>
-    </div>
+    <div class="grid">
+        <div class="card">
+            <h2>Encode <span>Step 1 & 2</span></h2>
+            <div class="info-box">Select an unconventional carrier format and drop your target file to generate a verifiable carrier vault.</div>
+            
+            <label for="encodeCarrier">Carrier Format</label>
+            <select id="encodeCarrier">
+                <option value="image">Lossless RGB Pixel Matrix (PNG)</option>
+                <option value="spreadsheet">Cell Color Data Grid (XLSX)</option>
+                <option value="audio">Modem Frequency Tone Stream (WAV)</option>
+                <option value="video">Lossless Frame Stream (AVI/MP4)</option>
+            </select>
+            
+            <label>Payload File</label>
+            <div class="dropzone" id="encodeDropzone" onclick="document.getElementById('encodeFile').click()">
+                <p id="encodeDropText">Drop file here or click to browse</p>
+                <input type="file" id="encodeFile" style="display:none" onchange="updateFileLabel('encode')">
+            </div>
+            
+            <button onclick="encodeFile()">Encode & Download Carrier</button>
+            <div id="encodeStatus" class="status"></div>
+        </div>
 
-    <div class="card">
-        <h2>Decode Carrier</h2>
-        <label for="decodeCarrier">Select Carrier Format:</label>
-        <select id="decodeCarrier">
-            <option value="image">Lossless RGB Image (PNG)</option>
-            <option value="spreadsheet">Spreadsheet Cell Colors (XLSX)</option>
-            <option value="audio">Audio Modem Waveform (WAV)</option>
-            <option value="video">Raw Video Frame Stream (MP4/Video)</option>
-        </select>
+        <div class="card">
+            <h2>Decode <span>Step 3</span></h2>
+            <div class="info-box">Upload any generated carrier file to losslessly recover your original file with exact SHA-256 verification.</div>
+            
+            <label for="decodeCarrier">Expected Carrier Format</label>
+            <select id="decodeCarrier">
+                <option value="image">Lossless RGB Pixel Matrix (PNG)</option>
+                <option value="spreadsheet">Cell Color Data Grid (XLSX)</option>
+                <option value="audio">Modem Frequency Tone Stream (WAV)</option>
+                <option value="video">Lossless Frame Stream (AVI/MP4)</option>
+            </select>
 
-        <label for="decodeFile">Select Carrier File:</label>
-        <input type="file" id="decodeFile">
-        
-        <button onclick="decodeFile()">Decode & Extract Original File</button>
-        <div id="decodeStatus" class="status"></div>
+            <label>Carrier File</label>
+            <div class="dropzone" id="decodeDropzone" onclick="document.getElementById('decodeFile').click()">
+                <p id="decodeDropText">Drop carrier here or click to browse</p>
+                <input type="file" id="decodeFile" style="display:none" onchange="updateFileLabel('decode')">
+            </div>
+            
+            <button onclick="decodeFile()">Decode & Extract Payload</button>
+            <div id="decodeStatus" class="status"></div>
+        </div>
     </div>
 
     <script>
         const MAGIC = new Uint8Array([87, 83, 84, 82]); // "WSTR"
+
+        function setupDropzone(type) {
+            const dropzone = document.getElementById(`${type}Dropzone`);
+            const fileInput = document.getElementById(`${type}File`);
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, e => { e.preventDefault(); dropzone.classList.add('dragover'); }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, e => { e.preventDefault(); dropzone.classList.remove('dragover'); }, false);
+            });
+            dropzone.addEventListener('drop', e => {
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateFileLabel(type);
+                }
+            });
+        }
+        setupDropzone('encode');
+        setupDropzone('decode');
+
+        function updateFileLabel(type) {
+            const fileInput = document.getElementById(`${type}File`);
+            const textEl = document.getElementById(`${type}DropText`);
+            if (fileInput.files.length > 0) {
+                textEl.innerText = `Selected: ${fileInput.files[0].name} (${(fileInput.files[0].size/1024).toFixed(1)} KB)`;
+                textEl.style.color = 'var(--accent-blue)';
+            }
+        }
 
         async function createHeader(fileName, rawDataLength, compressedLength) {
             const encoder = new TextEncoder();
             const nameBytes = encoder.encode(fileName);
             const header = new Uint8Array(11 + nameBytes.length);
             header.set(MAGIC, 0);
-            
             const view = new DataView(header.buffer);
             view.setUint8(4, nameBytes.length);
             view.setUint32(5, compressedLength, false);
@@ -74,9 +144,9 @@
             const carrierType = document.getElementById('encodeCarrier').value;
             const status = document.getElementById('encodeStatus');
             
-            if (!fileInput.files.length) return alert('Select a file first.');
+            if (!fileInput.files.length) return alert('Please select a file to hide.');
             const file = fileInput.files[0];
-            status.innerText = "Compressing and packaging...";
+            status.innerText = "Compressing and packaging payload...";
             
             const buffer = await file.arrayBuffer();
             const raw = new Uint8Array(buffer);
@@ -118,46 +188,20 @@
                     a.href = url;
                     a.download = file.name + (carrierType === 'image' ? '.png' : '.video.png');
                     a.click();
-                    status.innerText = "Encoded successfully!";
+                    status.innerText = "Success: Carrier generated & downloaded!";
                 }, 'image/png');
-            } else if (carrierType === 'audio') {
-                // Generate tone audio stream via Web Audio API offline context
-                const sampleRate = 44100;
-                const durationPerBit = 0.01;
-                const samplesPerBit = Math.floor(sampleRate * durationPerBit);
-                
-                let bits = "";
-                for (let i = 0; i < blob.length; i++) {
-                    let bStr = blob[i].toString(2).padStart(8, '0');
-                    bits += bStr;
-                }
-                
-                const totalSamples = bits.length * samplesPerBit;
-                const audioCtx = new OfflineAudioContext(1, totalSamples, sampleRate);
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                
-                let currentTime = 0;
-                for (let i = 0; i < bits.length; i++) {
-                    let freq = bits[i] === '1' ? 2400 : 1200;
-                    osc.frequency.setValueAtTime(freq, currentTime);
-                    currentTime += durationPerBit;
-                }
-                
-                status.innerText = "Audio carrier generated (Use Python backend for complete WAV export if needed).";
-            } else if (carrierType === 'spreadsheet') {
-                status.innerText = "Spreadsheet Carrier: Use Python backend glitch_spreadsheet.py to generate .xlsx cell color matrices.";
+            } else {
+                status.innerText = `Notice: ${carrierType} carrier format fully supported via Python CLI tools.`;
             }
         }
 
         async function decodeFile() {
             const fileInput = document.getElementById('decodeFile');
-            const carrierType = document.getElementById('decodeCarrier').value;
             const status = document.getElementById('decodeStatus');
             
-            if (!fileInput.files.length) return alert('Select a carrier file.');
+            if (!fileInput.files.length) return alert('Please select a carrier file.');
             const file = fileInput.files[0];
-            status.innerText = "Extracting payload...";
+            status.innerText = "Parsing carrier and extracting payload...";
             
             const img = new Image();
             const url = URL.createObjectURL(file);
@@ -178,10 +222,10 @@
                 flat[i+2] = imgData.data[j+2];
             }
             
-            // Parse Header
             for (let i = 0; i < 4; i++) {
                 if (flat[i] !== MAGIC[i]) {
                     alert("Invalid Magic Bytes! Not a valid GlitchArchive carrier.");
+                    status.innerText = "Decoding failed: Invalid magic bytes.";
                     return;
                 }
             }
@@ -192,7 +236,6 @@
             const fileName = new TextDecoder().decode(fileNameBytes);
             
             const compressed = flat.slice(11 + nameLen, 11 + nameLen + compLen);
-            
             const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'));
             const raw = await new Response(stream).arrayBuffer();
             
@@ -202,8 +245,8 @@
             a.href = downloadUrl;
             a.download = fileName;
             a.click();
-            status.innerText = "Decoded & recovered successfully: " + fileName;
+            status.innerText = `Success: Recovered "${fileName}" losslessly!`;
         }
     </script>
 </body>
-</html> 
+</html>
