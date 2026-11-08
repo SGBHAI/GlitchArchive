@@ -18,10 +18,7 @@ def encode(file_path, output_image):
 
 def decode(image_path, output_file):
     img = Image.open(image_path)
-    pixels = list(img.getdata())
-    flat = bytearray()
-    for r, g, b in pixels:
-        flat.extend((r, g, b))
+    flat = bytearray(img.tobytes())
     length = int.from_bytes(flat[:4], 'big')
     data = flat[4:4+length]
     with open(output_file, 'wb') as f:
