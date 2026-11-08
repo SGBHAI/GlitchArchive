@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GlitchArchive - Zero-Setup Web Demo</title>
+    <title>GlitchArchive</title>
     <style>
         body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 40px; max-width: 800px; margin: auto; }
         h1 { color: #58a6ff; }
@@ -14,36 +14,41 @@
 </head>
 <body>
     <h1>GlitchArchive</h1>
-    <p>Encode any file into a lossless RGB PNG image and decode it back instantly in your browser with zero setup.</p>
+    <p>Zero-setup lossless RGB image data vault with native compression.</p>
     
     <div class="card">
-        <h2>Encode File to Image</h2>
+        <h2>Encode File</h2>
         <input type="file" id="encodeFile">
         <br>
-        <button onclick="encodeFile()">Encode & Download PNG</button>
+        <button onclick="encodeFile()">Encode & Download</button>
     </div>
 
     <div class="card">
-        <h2>Decode Image to File</h2>
+        <h2>Decode Image</h2>
         <input type="file" id="decodeFile" accept="image/png">
         <br>
-        <button onclick="decodeFile()">Decode & Download File</button>
+        <button onclick="decodeFile()">Decode & Download</button>
     </div>
 
     <script>
         async function encodeFile() {
             const input = document.getElementById('encodeFile');
-            if (!input.files.length) return alert('Select a file first.');
+            if (!input.files.length) return alert('Select a file.');
             const file = input.files[0];
             const buffer = await file.arrayBuffer();
-            const data = new Uint8Array(buffer);
+            const raw = new Uint8Array(buffer);
             
-            const header = new Uint8Array(4);
-            new DataView(header.buffer).setUint32(0, data.length, false);
+            const stream = new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'));
+            const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
             
-            const payload = new Uint8Array(header.length + data.length);
+            const header = new Uint8Array(8);
+            const view = new DataView(header.buffer);
+            view.setUint32(0, raw.length, false);
+            view.setUint32(4, compressed.length, false);
+            
+            const payload = new Uint8Array(header.length + compressed.length);
             payload.set(header, 0);
-            payload.set(data, 4);
+            payload.set(compressed, 8);
             
             const paddedLen = Math.ceil(payload.length / 3) * 3;
             const padded = new Uint8Array(paddedLen);
@@ -55,9 +60,6 @@
             const totalBytes = width * height * 3;
             const canvasData = new Uint8ClampedArray(totalBytes);
             canvasData.set(padded);
-            for (let i = padded.length; i < totalBytes; i++) {
-                canvasData[i] = 0;
-            }
             
             const canvas = document.createElement('canvas');
             canvas.width = width;
@@ -84,7 +86,7 @@
 
         async function decodeFile() {
             const input = document.getElementById('decodeFile');
-            if (!input.files.length) return alert('Select an archive image first.');
+            if (!input.files.length) return alert('Select an image.');
             const file = input.files[0];
             
             const img = new Image();
@@ -106,10 +108,15 @@
                 flat[i+2] = imgData.data[j+2];
             }
             
-            const length = new DataView(flat.buffer).getUint32(0, false);
-            const data = flat.slice(4, 4 + length);
+            const view = new DataView(flat.buffer);
+            const origLen = view.getUint32(0, false);
+            const compLen = view.getUint32(4, false);
+            const compressed = flat.slice(8, 8 + compLen);
             
-            const blob = new Blob([data]);
+            const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'));
+            const raw = await new Response(stream).arrayBuffer();
+            
+            const blob = new Blob([raw]);
             const downloadUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = downloadUrl;
