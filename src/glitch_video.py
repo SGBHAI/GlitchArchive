@@ -4,28 +4,23 @@ import cv2
 import numpy as np
 from core import pack_blob, unpack_blob
 
-def encode(file_path, video_path, fps=30):
+def encode(file_path, video_path):
     blob = pack_blob(file_path)
-    # Store exact length prefix (4 bytes) before payload so decoder knows where valid data ends
     length_prefix = len(blob).to_bytes(4, 'big')
     full_payload = length_prefix + blob
     
-    padded_len = (len(full_payload) + 2) // 3 * 3
-    payload = full_payload.ljust(padded_len, b'\x00')
-    
     width, height = 320, 240
     frame_bytes = width * height * 3
-    total_frames = math.ceil(len(payload) / frame_bytes)
+    total_frames = math.ceil(len(full_payload) / frame_bytes)
     
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
+    fourcc = cv2.VideoWriter_fourcc(*'HFYU')
+    out = cv2.VideoWriter(video_path, fourcc, 30, (width, height), isColor=True)
     
     for f in range(total_frames):
-        chunk = payload[f * frame_bytes : (f + 1) * frame_bytes]
+        chunk = full_payload[f * frame_bytes : (f + 1) * frame_bytes]
         chunk = chunk.ljust(frame_bytes, b'\x00')
         frame = np.frombuffer(chunk, dtype=np.uint8).reshape((height, width, 3))
         out.write(frame)
-    
     out.release()
 
 def decode(video_path, output_file):
@@ -37,12 +32,8 @@ def decode(video_path, output_file):
         if not ret:
             break
         raw_bytes.extend(frame.tobytes())
-    
     cap.release()
     
-    if len(raw_bytes) < 4:
-        raise ValueError("Video file too short or empty")
-        
     payload_len = int.from_bytes(raw_bytes[:4], 'big')
     blob = bytes(raw_bytes[4 : 4 + payload_len])
     
