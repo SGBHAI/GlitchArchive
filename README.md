@@ -83,4 +83,4 @@ GlitchArchive features a fully client-side browser dashboard (`index.html`) util
 
 ## Acknowledgments & AI Assistance Disclosure
 
-GlitchArchive was designed, architected, and built as an independent systems and data-encoding project. Generative AI tools (Google Gemini) were used for suggesting updates and generating the `README.md`.
+GlitchArchive was designed, architected, and built as an independent systems and data-encoding project. Generative AI tools (Google Gemini) were used for suggesting updates and assisting in the generation of the `README.md`.
