@@ -6,15 +6,15 @@ from core import pack_blob, unpack_blob
 
 def encode(file_path, output_path):
     blob = pack_blob(file_path)
-    padded_len = math.ceil(len(blob) / 3) * 3
-    payload = bytearray(padded_len)
-    payload[:len(blob)] = blob
+    row_size = 320 * 3
+    remainder = len(blob) % row_size
+    if remainder != 0:
+        blob += b'\x00' * (row_size - remainder)
     
     width = 320
-    num_pixels = len(payload) // 3
-    height = math.ceil(num_pixels / width)
+    height = len(blob) // row_size
     
-    arr = np.frombuffer(payload, dtype=np.uint8).reshape((height, width, 3))
+    arr = np.frombuffer(blob, dtype=np.uint8).reshape((height, width, 3))
     img = Image.fromarray(arr, 'RGB')
     img.save(output_path)
 

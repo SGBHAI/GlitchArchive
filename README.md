@@ -27,7 +27,7 @@ GlitchArchive implements robust, fully functioning storage carriers:
 
 1. **Lossless RGB Pixel Matrix (`glitch_image.py` / Web)**: Packs serialized blobs directly into square-proportioned RGB pixel channels of uncompressed PNG images. Best for compact storage.
 
-2. **Lossless Pixel Matrix Stream (`glitch_video.py` / Web)**: Packs serialized blobs into a fixed 320px wide row stride. Best for streaming and frame-interleaved simulation.
+2. **Lossless Pixel Matrix Stream (`glitch_stream.py` / Web)**: Packs serialized blobs into a fixed 320px wide row stride. Best for streaming and frame-interleaved simulation.
 
 3. **Chess PGN (`glitch_chess.py` / Web)**: Encodes arbitrary binary data into custom metadata headers (`[PayloadData]`) of PGN chess game notation files. Best for social sharing.
 
@@ -59,19 +59,21 @@ pip install -r requirements.txt
 #### Encode Payload to Carrier:
 
 ```powershell
-python src/glitch_video.py enc test_input.txt test_archive.avi
+python src/glitch_stream.py enc test_input.txt test_stream.png
 ```
 
 #### Decode Carrier to Recover Payload:
 
 ```powershell
-python src/glitch_video.py dec test_archive.avi test_recovered_video.txt
+python src/glitch_stream.py dec test_stream.png test_recovered.txt
 ```
 
 #### Verify Data Integrity (SHA-256 Hash Validation):
 
 ```powershell
 Get-FileHash test_input.txt, test_recovered_video.txt -Algorithm SHA256
+--------------------------------------OR-------------------------------------------------------  
+Get-FileHash test_input.txt -Algorithm SHA256; Get-FileHash test_recovered.txt -Algorithm SHA256   (Recommended)
 ```
 
 ## Web Interface & Live Deployment
@@ -83,4 +85,4 @@ GlitchArchive features a fully client-side browser dashboard (`index.html`) util
 
 ## Acknowledgments & AI Assistance Disclosure
 
-GlitchArchive was designed, architected, and built as an independent systems and data-encoding project. Generative AI tools (Google Gemini) were used for suggesting updates and assisting in the generation of the `README.md`.
+GlitchArchive was designed, architected, and built as an independent systems and data-encoding project. Generative AI tools (Google Gemini) were used for suggesting updates and assisting in the generation of the `README.md` by giving format tricks like ```(language) then end with ``` etc.
