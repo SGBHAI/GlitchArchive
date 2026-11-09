@@ -19,25 +19,18 @@
         header { text-align: center; margin-bottom: 30px; }
         h1 { color: var(--accent-blue); font-size: 2.2rem; margin-bottom: 10px; }
         p.subtitle { color: var(--text-muted); font-size: 0.95rem; }
-        
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media(max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        
         .card { background: var(--bg-card); border: 1px solid var(--border); padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .card h2 { color: var(--accent-blue); font-size: 1.3rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .card h2 span { background: var(--border); color: var(--text-main); font-size: 0.8rem; padding: 2px 8px; border-radius: 12px; }
-        
+        .card h2 { color: var(--accent-blue); font-size: 1.3rem; margin-bottom: 15px; }
         label { color: var(--text-muted); display: block; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
         select, input[type="file"] { margin-bottom: 20px; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-family: monospace; width: 100%; outline: none; transition: border-color 0.2s; }
         select:focus, input[type="file"]:focus { border-color: var(--accent-blue); }
-        
         .dropzone { border: 2px dashed var(--border); padding: 25px; text-align: center; border-radius: 6px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; background: rgba(22,27,34,0.5); }
         .dropzone.dragover { border-color: var(--accent-blue); background: rgba(88,166,255,0.05); }
         .dropzone p { color: var(--text-muted); font-size: 0.9rem; }
-
         button { background: var(--accent-green); color: white; border: none; padding: 12px 20px; cursor: pointer; font-family: monospace; border-radius: 6px; width: 100%; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
         button:hover { background: var(--accent-green-hover); }
-        
         .status { margin-top: 15px; color: #3fb950; font-size: 0.9rem; font-weight: bold; min-height: 20px; word-break: break-all; }
         .info-box { background: rgba(88,166,255,0.05); border-left: 3px solid var(--accent-blue); padding: 12px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; border-radius: 0 6px 6px 0; }
     </style>
@@ -50,8 +43,8 @@
     
     <div class="grid">
         <div class="card">
-            <h2>Encode <span>Step 1 & 2</span></h2>
-            <div class="info-box">Select an unconventional carrier format and drop your target file to generate a verifiable carrier vault.</div>
+            <h2>Encode File to Carrier</h2>
+            <div class="info-box">Select carrier format, drop your file, and download the generated carrier vault.</div>
             
             <label for="encodeCarrier">Carrier Format</label>
             <select id="encodeCarrier">
@@ -72,10 +65,10 @@
         </div>
 
         <div class="card">
-            <h2>Decode <span>Step 3</span></h2>
-            <div class="info-box">Upload any generated carrier file to losslessly recover your original file with exact SHA-256 verification.</div>
+            <h2>Decode Carrier to File</h2>
+            <div class="info-box">Upload carrier file to losslessly recover original file with SHA-256 validation.</div>
             
-            <label for="decodeCarrier">Expected Carrier Format</label>
+            <label for="decodeCarrier">Carrier Format</label>
             <select id="decodeCarrier">
                 <option value="image">Lossless RGB Pixel Matrix (PNG)</option>
                 <option value="spreadsheet">Cell Color Data Grid (XLSX)</option>
@@ -95,7 +88,7 @@
     </div>
 
     <script>
-        const MAGIC = new Uint8Array([87, 83, 84, 82]); // "WSTR"
+        const MAGIC = new Uint8Array([87, 83, 84, 82]);
 
         function setupDropzone(type) {
             const dropzone = document.getElementById(`${type}Dropzone`);
