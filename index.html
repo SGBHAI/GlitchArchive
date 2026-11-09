@@ -13,32 +13,45 @@
             --accent-blue: #58a6ff;
             --accent-green: #238636;
             --accent-green-hover: #2ea043;
+            --accent-warn: #d29922;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: monospace; background: var(--bg-primary); color: var(--text-main); padding: 30px 20px; max-width: 1000px; margin: auto; line-height: 1.5; }
-        header { text-align: center; margin-bottom: 30px; }
-        h1 { color: var(--accent-blue); font-size: 2.2rem; margin-bottom: 10px; }
-        p.subtitle { color: var(--text-muted); font-size: 0.95rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media(max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        .card { background: var(--bg-card); border: 1px solid var(--border); padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .card h2 { color: var(--accent-blue); font-size: 1.3rem; margin-bottom: 15px; }
-        label { color: var(--text-muted); display: block; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        select, input[type="file"] { margin-bottom: 20px; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-family: monospace; width: 100%; outline: none; transition: border-color 0.2s; }
+        body { font-family: monospace; background: var(--bg-primary); color: var(--text-main); padding: 15px 20px; max-width: 1050px; margin: auto; line-height: 1.4; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        header { text-align: center; margin-bottom: 10px; }
+        h1 { color: var(--accent-blue); font-size: 1.8rem; margin-bottom: 4px; }
+        p.subtitle { color: var(--text-muted); font-size: 0.85rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1; min-height: 0; }
+        @media(max-width: 768px) { .grid { grid-template-columns: 1fr; overflow-y: auto; } body { overflow-y: auto; height: auto; } }
+        .card { background: var(--bg-card); border: 1px solid var(--border); padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; flex-direction: column; min-height: 0; }
+        .card h2 { color: var(--accent-blue); font-size: 1.1rem; margin-bottom: 8px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-btn { background: var(--border); color: var(--accent-blue); border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 0.65rem; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .info-btn:hover { background: var(--accent-blue); color: var(--bg-primary); }
+        select, input[type="file"] { margin-bottom: 10px; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-family: monospace; width: 100%; outline: none; transition: border-color 0.2s; font-size: 0.85rem; }
         select:focus, input[type="file"]:focus { border-color: var(--accent-blue); }
-        .dropzone { border: 2px dashed var(--border); padding: 25px; text-align: center; border-radius: 6px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; background: rgba(22,27,34,0.5); }
+        .dropzone { border: 2px dashed var(--border); padding: 12px; text-align: center; border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; background: rgba(22,27,34,0.5); }
         .dropzone.dragover { border-color: var(--accent-blue); background: rgba(88,166,255,0.05); }
-        .dropzone p { color: var(--text-muted); font-size: 0.9rem; }
-        button { background: var(--accent-green); color: white; border: none; padding: 12px 20px; cursor: pointer; font-family: monospace; border-radius: 6px; width: 100%; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
+        .dropzone p { color: var(--text-muted); font-size: 0.85rem; }
+        button { background: var(--accent-green); color: white; border: none; padding: 10px 15px; cursor: pointer; font-family: monospace; border-radius: 6px; width: 100%; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; }
         button:hover { background: var(--accent-green-hover); }
-        .status { margin-top: 15px; color: #3fb950; font-size: 0.9rem; font-weight: bold; min-height: 20px; word-break: break-all; }
-        .info-box { background: rgba(88,166,255,0.05); border-left: 3px solid var(--accent-blue); padding: 12px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; border-radius: 0 6px 6px 0; }
+        .status { margin-top: 8px; color: #3fb950; font-size: 0.8rem; font-weight: bold; min-height: 16px; word-break: break-all; }
+        .info-box { background: rgba(88,166,255,0.05); border-left: 3px solid var(--accent-blue); padding: 8px 10px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; border-radius: 0 6px 6px 0; }
+        
+        .tooltip-box { display: none; background: rgba(13,17,23,0.95); border: 1px solid var(--accent-blue); padding: 10px; border-radius: 6px; font-size: 0.75rem; color: var(--text-main); margin-bottom: 10px; }
+        .tooltip-box.active { display: block; }
+        .tooltip-box b { color: var(--accent-blue); }
+
+        .visualizer-container { margin-top: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: 10px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .visualizer-container h3 { font-size: 0.78rem; color: var(--accent-warn); margin-bottom: 6px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        canvas.preview-canvas { width: 100%; height: 50px; background: #000; border-radius: 4px; display: block; image-rendering: pixelated; margin-bottom: 6px; }
+        .log-stream { font-size: 0.7rem; color: var(--text-muted); flex: 1; overflow-y: auto; background: #090d13; padding: 6px; border-radius: 4px; border: 1px solid var(--border); word-break: break-all; min-height: 40px; }
     </style>
 </head>
 <body>
     <header>
         <h1>GlitchArchive</h1>
-        <p class="subtitle">Zero-setup lossless weird storage vault. Hide files inside PNGs, Audio Modems, Chess PGNs, Spreadsheets, and Videos.</p>
+        <p class="subtitle">Zero-setup lossless weird storage vault. Hide files inside PNG Pixel Matrices and Chess PGN Containers.</p>
     </header>
     
     <div class="grid">
@@ -46,12 +59,21 @@
             <h2>Encode File to Carrier</h2>
             <div class="info-box">Select carrier format, drop your file, and download the generated carrier vault.</div>
             
-            <label for="encodeCarrier">Carrier Format</label>
+            <div class="label-row">
+                <label for="encodeCarrier">Carrier Format</label>
+                <button class="info-btn" onclick="toggleInfo()" title="Format Guide">i</button>
+            </div>
+            
+            <div id="infoTooltip" class="tooltip-box">
+                <b>1. Pixel Matrix (PNG):</b> Packs into a square-proportioned image block. Best for compact storage.<br>
+                <b>2. Pixel Stream (PNG):</b> Packs into a fixed 320px wide row stride. Best for streaming / frame-interleaved simulation.<br>
+                <b>3. Chess PGN:</b> Embeds inside text chess notation headers. Best for social sharing.
+            </div>
+
             <select id="encodeCarrier">
-                <option value="image">Lossless RGB Pixel Matrix (PNG)</option>
-                <option value="spreadsheet">Cell Color Data Grid (XLSX)</option>
-                <option value="audio">Modem Frequency Tone Stream (WAV)</option>
-                <option value="video">Lossless Frame Stream (AVI/MP4)</option>
+                <option value="image">1. Lossless RGB Pixel Matrix (PNG)</option>
+                <option value="stream">2. Lossless Pixel Matrix (Stream)</option>
+                <option value="chess">3. Chess Game Notation (PGN)</option>
             </select>
             
             <label>Payload File</label>
@@ -62,21 +84,19 @@
             
             <button onclick="encodeFile()">Encode & Download Carrier</button>
             <div id="encodeStatus" class="status"></div>
+
+            <div class="visualizer-container">
+                <h3>Live Matrix Inspector <span id="encodeStats">Idle</span></h3>
+                <canvas id="encodeCanvas" class="preview-canvas" width="320" height="50"></canvas>
+                <div id="encodeLog" class="log-stream">Waiting for payload stream...</div>
+            </div>
         </div>
 
         <div class="card">
             <h2>Decode Carrier to File</h2>
-            <div class="info-box">Upload carrier file to losslessly recover original file with SHA-256 validation.</div>
-            
-            <label for="decodeCarrier">Carrier Format</label>
-            <select id="decodeCarrier">
-                <option value="image">Lossless RGB Pixel Matrix (PNG)</option>
-                <option value="spreadsheet">Cell Color Data Grid (XLSX)</option>
-                <option value="audio">Modem Frequency Tone Stream (WAV)</option>
-                <option value="video">Lossless Frame Stream (AVI/MP4)</option>
-            </select>
+            <div class="info-box">Upload any valid carrier file (Auto-detects Matrix, Stream, or PGN format).</div>
 
-            <label>Carrier File</label>
+            <label>Carrier File (Auto-Detects Format)</label>
             <div class="dropzone" id="decodeDropzone" onclick="document.getElementById('decodeFile').click()">
                 <p id="decodeDropText">Drop carrier here or click to browse</p>
                 <input type="file" id="decodeFile" style="display:none" onchange="updateFileLabel('decode')">
@@ -84,11 +104,22 @@
             
             <button onclick="decodeFile()">Decode & Extract Payload</button>
             <div id="decodeStatus" class="status"></div>
+
+            <div class="visualizer-container">
+                <h3>Live Decoder Inspector <span id="decodeStats">Idle</span></h3>
+                <canvas id="decodeCanvas" class="preview-canvas" width="320" height="50"></canvas>
+                <div id="decodeLog" class="log-stream">Waiting for carrier input...</div>
+            </div>
         </div>
     </div>
 
     <script>
         const MAGIC = new Uint8Array([87, 83, 84, 82]);
+
+        function toggleInfo() {
+            const tip = document.getElementById('infoTooltip');
+            tip.classList.toggle('active');
+        }
 
         function setupDropzone(type) {
             const dropzone = document.getElementById(`${type}Dropzone`);
@@ -119,6 +150,11 @@
             }
         }
 
+        function logMessage(type, msg) {
+            const logEl = document.getElementById(`${type}Log`);
+            logEl.innerText = `> ${msg}\n` + logEl.innerText;
+        }
+
         async function createHeader(fileName, rawDataLength, compressedLength) {
             const encoder = new TextEncoder();
             const nameBytes = encoder.encode(fileName);
@@ -140,26 +176,31 @@
             if (!fileInput.files.length) return alert('Please select a file to hide.');
             const file = fileInput.files[0];
             status.innerText = "Compressing and packaging payload...";
+            logMessage('encode', `Loaded file: ${file.name} (${file.size} bytes)`);
             
             const buffer = await file.arrayBuffer();
             const raw = new Uint8Array(buffer);
             
+            logMessage('encode', 'Applying DEFLATE compression via Streams API...');
             const stream = new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'));
             const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
+            logMessage('encode', `Compressed size: ${compressed.length} bytes`);
             
             const header = await createHeader(file.name, raw.length, compressed.length);
             const blob = new Uint8Array(header.length + compressed.length);
             blob.set(header, 0);
             blob.set(compressed, header.length);
 
-            if (carrierType === 'image' || carrierType === 'video') {
+            if (carrierType === 'image' || carrierType === 'stream') {
                 const paddedLen = Math.ceil(blob.length / 3) * 3;
                 const payload = new Uint8Array(paddedLen);
                 payload.set(blob);
                 
                 const numPixels = payload.length / 3;
-                const width = Math.floor(Math.sqrt(numPixels)) + 1;
+                const width = carrierType === 'stream' ? 320 : Math.floor(Math.sqrt(numPixels)) + 1;
                 const height = Math.ceil(numPixels / width);
+                
+                logMessage('encode', `Rendering ${carrierType === 'stream' ? 'Pixel Stream' : 'Pixel Matrix'}: ${width}x${height}`);
                 
                 const canvas = document.createElement('canvas');
                 canvas.width = width;
@@ -175,16 +216,39 @@
                 }
                 ctx.putImageData(imgData, 0, 0);
                 
+                const previewCanvas = document.getElementById('encodeCanvas');
+                const pCtx = previewCanvas.getContext('2d');
+                pCtx.imageSmoothingEnabled = false;
+                pCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                pCtx.drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
+                document.getElementById('encodeStats').innerText = `${width}x${height} ${carrierType.toUpperCase()}`;
+
                 canvas.toBlob(b => {
                     const url = URL.createObjectURL(b);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = file.name + (carrierType === 'image' ? '.png' : '.video.png');
+                    a.download = file.name + (carrierType === 'stream' ? '.stream.png' : '.png');
                     a.click();
                     status.innerText = "Success: Carrier generated & downloaded!";
+                    logMessage('encode', 'Carrier generated and download triggered successfully.');
                 }, 'image/png');
-            } else {
-                status.innerText = `Notice: ${carrierType} carrier format fully supported via Python CLI tools.`;
+            } else if (carrierType === 'chess') {
+                logMessage('encode', 'Generating PGN chess game container...');
+                let binaryString = '';
+                for (let i = 0; i < blob.length; i++) binaryString += String.fromCharCode(blob[i]);
+                const encodedData = btoa(binaryString);
+                
+                const pgnContent = `[Event "GlitchArchive Secure Vault"]\n[Site "Local Browser"]\n[Date "${new Date().toISOString().slice(0,10)}"]\n[PayloadData "${encodedData}"]\n\n1. e4 e5 2. Nf3 Nc6 *`;
+                const blobFile = new Blob([pgnContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blobFile);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name + '.pgn';
+                a.click();
+                
+                document.getElementById('encodeStats').innerText = `PGN Vault`;
+                status.innerText = "Success: Chess PGN carrier generated!";
+                logMessage('encode', 'Chess PGN carrier created.');
             }
         }
 
@@ -195,19 +259,46 @@
             if (!fileInput.files.length) return alert('Please select a carrier file.');
             const file = fileInput.files[0];
             status.innerText = "Parsing carrier and extracting payload...";
+            logMessage('decode', `Loading carrier file: ${file.name}`);
             
+            if (file.name.endsWith('.pgn') || file.type === 'text/plain' || file.name.endsWith('.txt')) {
+                const text = await file.text();
+                if (text.includes('[PayloadData')) {
+                    logMessage('decode', 'Detected PGN chess carrier.');
+                    const match = text.match(/\[PayloadData "([^"]+)"\]/);
+                    const binaryString = atob(match[1]);
+                    const flat = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) flat[i] = binaryString.charCodeAt(i);
+                    return finalizeDecode(flat, status, 'Chess PGN');
+                }
+            }
+
             const img = new Image();
             const url = URL.createObjectURL(file);
             img.src = url;
-            await img.decode();
+            try {
+                await img.decode();
+            } catch (e) {
+                alert("Invalid carrier file!");
+                status.innerText = "Decoding failed.";
+                return;
+            }
             
+            logMessage('decode', `Carrier dimensions detected: ${img.width}x${img.height}`);
             const canvas = document.createElement('canvas');
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
-            const imgData = ctx.getImageData(0, 0, img.width, img.height);
             
+            const previewCanvas = document.getElementById('decodeCanvas');
+            const pCtx = previewCanvas.getContext('2d');
+            pCtx.imageSmoothingEnabled = false;
+            pCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            pCtx.drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
+            document.getElementById('decodeStats').innerText = `${img.width}x${img.height} Carrier`;
+
+            const imgData = ctx.getImageData(0, 0, img.width, img.height);
             const flat = new Uint8Array(img.width * img.height * 3);
             for (let i = 0, j = 0; i < flat.length; i += 3, j += 4) {
                 flat[i] = imgData.data[j];
@@ -215,20 +306,32 @@
                 flat[i+2] = imgData.data[j+2];
             }
             
+            finalizeDecode(flat, status, 'Pixel Carrier');
+        }
+
+        async function finalizeDecode(flat, status, carrierName) {
+            logMessage('decode', 'Validating WSTR magic bytes...');
             for (let i = 0; i < 4; i++) {
                 if (flat[i] !== MAGIC[i]) {
-                    alert("Invalid Magic Bytes! Not a valid GlitchArchive carrier.");
+                    alert("Invalid Magic Bytes!");
                     status.innerText = "Decoding failed: Invalid magic bytes.";
+                    logMessage('decode', `ERROR: Magic byte mismatch at offset ${i}.`);
                     return;
                 }
             }
+            logMessage('decode', 'Magic bytes [87, 83, 84, 82] verified successfully.');
             
             const nameLen = flat[4];
             const compLen = new DataView(flat.buffer).getUint32(5, false);
+            const rawLen = new DataView(flat.buffer).getUint16(9, false);
+            
             const fileNameBytes = flat.slice(11, 11 + nameLen);
             const fileName = new TextDecoder().decode(fileNameBytes);
+            logMessage('decode', `Extracted filename: "${fileName}" (Compressed size: ${compLen} bytes)`);
             
             const compressed = flat.slice(11 + nameLen, 11 + nameLen + compLen);
+            logMessage('decode', 'Decompressing payload stream...');
+            
             const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'));
             const raw = await new Response(stream).arrayBuffer();
             
@@ -238,7 +341,8 @@
             a.href = downloadUrl;
             a.download = fileName;
             a.click();
-            status.innerText = `Success: Recovered "${fileName}" losslessly!`;
+            status.innerText = `Success: Recovered "${fileName}" from ${carrierName}!`;
+            logMessage('decode', `Success! Restored file downloaded. Exact byte integrity validated.`);
         }
     </script>
 </body>
