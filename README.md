@@ -1,6 +1,6 @@
 # GlitchArchive 🚀
 
-A multi-carrier lossless "weird storage" vault engineered to store arbitrary files inside unconventional digital media—including RGB Pixel Matrices, Pixel Streams, and Chess PGN Containers—with bit-perfect SHA-256 validation.
+A multi-carrier lossless "weird storage" vault engineered to store arbitrary files inside unconventional digital media—including RGB Pixel Matrices, Pixel Streams, and Chess PGN Containers—with bit-perfect SHA-256 validation. For now supports upto 4,294,967,295 bytes (4 GB) of files
 
 Built as an advanced systems and data-encoding project for the Hack Club card.
 
