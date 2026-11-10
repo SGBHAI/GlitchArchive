@@ -1,87 +1,31 @@
 # GlitchArchive 🚀
 
-A multi-carrier lossless "weird storage" vault engineered to store arbitrary files inside unconventional digital media—including RGB Pixel Matrices, Pixel Streams, and Chess PGN Containers—with bit-perfect SHA-256 validation. For now supports upto 4,294,967,295 bytes (4 GB) of files
+A multi-carrier lossless "weird storage" vault engineered to store arbitrary files inside unconventional digital media—including RGB Pixel Matrices, Pixel Streams, and Chess PGN Containers—with bit-perfect SHA-256 validation. Supports up to 4,294,967,295 bytes (4 GB) of files.
 
-Built as an advanced systems and data-encoding project for the Hack Club card.
+## What It Is
+GlitchArchive is a data steganography and unconventional storage engine that transforms any arbitrary file into visual or structured carrier formats like PNG images and PGN chess game notation, enabling lossless round-trip recovery across both CLI Python scripts and browser-based web applications.
 
-## Architecture & Binary Specification
+## How I Built It
+- **Core Engine (`core.py`)**: Implements blob packaging and un-packaging using zlib compression and a 13-byte binary header structure (`>BII`) tracking magic bytes (`WSTR`), filename length, compressed length, and raw length.
+- **Carriers**: Built multi-format encoders and decoders including pixel streams, RGB pixel matrices, and chess PGN move converters.
+- **Web Interface (`index.html`)**: Frontend implementation utilizing JavaScript `DataView` and browser canvas APIs to pack and unpack payloads directly in the browser, matching the 13-byte binary header specification for seamless interoperability with the Python CLI.
 
-GlitchArchive uses a unified binary serialization format wrapped in custom carrier containers. Every archive is packaged using the `core.py` serialization engine.
+## What Was Hard
+- **Header Synchronization**: Aligning the 13-byte binary header (`>BII`) across both Python `struct` formatting and JavaScript `DataView` byte offsets (`Uint8` and big-endian `Uint32`) to prevent parsing desyncs between CLI and web carriers.
+- **Memory & Scale**: Upgrading the file size ceiling from 64 KB (`H` 16-bit short) to 4 GB (`I` 32-bit uint) without corrupting compressed stream offsets or breaking byte-level SHA-256 integrity checks.
 
-### The `WSTR` Header Layout
+## Header Table (13 Bytes Total)
+| Field      | Type / Size         | Description                          |
+| :---       | :------             |                                      |  
+| **Magic**  | 4 Bytes (`b"WSTR"`) | File signature identifier            |
+| **NameLen**| 1 Byte (`uint8`)    | Length of the original filename      |
+| **CompLen**| 4 Bytes (`uint32be`)| Length of the zlib compressed payload|
+| **RawLen** | 4 Bytes (`uint32be`)| Length of the uncompressed raw data  |
+| **Name**   | `NameLen` Bytes     | UTF-8 encoded filename string        |
+| **Payload**| `CompLen` Bytes     | Zlib-compressed binary data          |
 
-Every encoded payload begins with a standardized 11-byte header followed by the DEFLATE-compressed payload:
-
-| Offset  | Size     | Type              | Description                             | 
-| -----   | -----    | -----             | -----                                   | 
-| `0 - 3` | 4 bytes  | ASCII / Byte Array| Magic bytes: `[87, 83, 84, 82]` (`WSTR`)| 
-| `4`     | 1 byte   | Unsigned Byte     | File name length (`N`)                  | 
-| `5 - 8` | 4 bytes  | Big-Endian Uint32 | Compressed payload length               | 
-| `9 - 10`| 2 bytes  | Unsigned Uint16   | Raw uncompressed file size              | 
-| `11`    | `N` bytes| UTF-8 String      | Original filename                       | 
-| `11 + N`| Variable | Byte Stream       | DEFLATE-compressed binary payload       | 
-
-## Carrier Modules
-
-GlitchArchive implements robust, fully functioning storage carriers:
-
-1. **Lossless RGB Pixel Matrix (`glitch_image.py` / Web)**: Packs serialized blobs directly into square-proportioned RGB pixel channels of uncompressed PNG images. Best for compact storage.
-
-2. **Lossless Pixel Matrix Stream (`glitch_stream.py` / Web)**: Packs serialized blobs into a fixed 320px wide row stride. Best for streaming and frame-interleaved simulation.
-
-3. **Chess PGN (`glitch_chess.py` / Web)**: Encodes arbitrary binary data into custom metadata headers (`[PayloadData]`) of PGN chess game notation files. Best for social sharing.
-
-## Requirements & Dependencies
-
-Install all necessary dependencies for the Python CLI modules using `requirements.txt`:
-
-```bash
-pip install -r requirements.txt
-```
-
-## Local Development & Installation
-
-### Prerequisites
-
-* Python 3.10+
-* Required Python libraries (listed in `requirements.txt`)
-
-### Installation & Setup
-
-```bash
-git clone https://github.com/SGBHAI/GlitchArchive.git
-cd glitcharchive
-pip install -r requirements.txt
-```
-
-### Usage (CLI Test Suite)
-
-#### Encode Payload to Carrier:
-
-```powershell
-python src/glitch_stream.py enc test_input.txt test_stream.png
-```
-
-#### Decode Carrier to Recover Payload:
-
-```powershell
-python src/glitch_stream.py dec test_stream.png test_recovered.txt
-```
-
-#### Verify Data Integrity (SHA-256 Hash Validation):
-
-```powershell
-Get-FileHash test_input.txt, test_recovered_video.txt -Algorithm SHA256
---------------------------------------OR-------------------------------------------------------  
-Get-FileHash test_input.txt -Algorithm SHA256; Get-FileHash test_recovered.txt -Algorithm SHA256   (Recommended)
-```
-
-## Web Interface & Live Deployment
-
-GlitchArchive features a fully client-side browser dashboard (`index.html`) utilizing the HTML5 Canvas API and Web Streams API (`CompressionStream` / `DecompressionStream`) for zero-setup, lightning-fast in-browser encoding and decoding.
-
-* **Live Preview / Production URL**: https://sgbhai.github.io/GlitchArchive/
-* **Hosting**: Automatically deployed and hosted via GitHub Pages directly from the main branch.
+## My Experience and reason for picking this card
+When I first learned about the idea of steganography, I was in disbelief—it made me wonder how, why, and what. So I watched some YouTube videos to understand how it works, and then it became one of my 31st projects (that was a long time ago). Later, I saw Hack Club on Instagram and joined a space-related hackathon or program, though I can't remember the name. As soon as I joined, it ended. While searching for another program, I found Crescent and saw this card, which reminded me that I had done something similar before. That's why I picked this card.
 
 ## Acknowledgments & AI Assistance Disclosure
 

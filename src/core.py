@@ -7,6 +7,8 @@ MAGIC = b"WSTR"
 def pack_blob(file_path):
     raw = Path(file_path).read_bytes()
     name = Path(file_path).name.encode()
+    if len(name) > 255:
+        raise ValueError("Filename exceeds 255 bytes limit")
     compressed = zlib.compress(raw, level=9)
     header = MAGIC + struct.pack(">BII", len(name), len(compressed), len(raw)) + name
     return header + compressed
