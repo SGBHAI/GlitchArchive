@@ -18,7 +18,7 @@ def encode(file_path, output_image):
     img.save(output_image)
 
 def decode(image_path, output_file):
-    img = Image.open(image_path)
+    img = Image.open(image_path).convert('RGB')
     flat = bytearray(img.tobytes())
     filename, raw, sha = unpack_blob(bytes(flat))
     with open(output_file, 'wb') as f:

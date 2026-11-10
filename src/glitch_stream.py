@@ -21,7 +21,7 @@ def encode(file_path, output_path):
     img.save(output_path)
 
 def decode(input_path, output_file):
-    img = Image.open(input_path)
+    img = Image.open(input_path).convert('RGB')
     arr = np.array(img)
     flat = arr.tobytes()
     
