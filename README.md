@@ -25,7 +25,7 @@ GlitchArchive is a data steganography and unconventional storage engine that tra
 | **Payload**| `CompLen` Bytes     | Zlib-compressed binary data          |
 
 ## My Experience and reason for picking this card
-When I first learned about the idea of steganography, I was in disbelief—it made me wonder how, why, and what. So I watched some YouTube videos to understand how it works, and then it became one of my 31st projects (that was a long time ago). Later, I saw Hack Club on Instagram and joined a space-related hackathon or program, though I can't remember the name. As soon as I joined, it ended. While searching for another program, I found Crescent and saw this card, which reminded me that I had done something similar before. That's why I picked this card.
+When I first learned about steganography, I was in disbelief. It made me wonder how, why, and what it was. So I watched some YouTube videos to understand how it works, and it became one of my 31st projects. (That was a long time ago, and it was just a bare skeleton—none of it is used here.) Later, I saw Hack Club on Instagram and joined a space-related hackathon or program, though I can't remember its name. As soon as I joined, it ended. While searching for another program, I found Crescent and saw this card, which reminded me that I had done something similar before. That's why I picked this card.
 
 ## How to Run
 - **Python CLI Pack:** `python -m src.core pack <filename>`
