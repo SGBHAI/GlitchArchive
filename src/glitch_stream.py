@@ -2,10 +2,12 @@ import sys
 import math
 import numpy as np
 from PIL import Image
-from core import pack_blob, unpack_blob
+from .core import pack_blob, unpack_blob
 
 def encode(file_path, output_path):
-    blob = pack_blob(file_path)
+    with open(file_path, "rb") as f:
+        raw_data = f.read()
+    blob = pack_blob(file_path, raw_data)
     row_size = 320 * 3
     remainder = len(blob) % row_size
     if remainder != 0:
@@ -23,7 +25,7 @@ def decode(input_path, output_file):
     arr = np.array(img)
     flat = arr.tobytes()
     
-    _, raw = unpack_blob(flat)
+    filename, raw, sha = unpack_blob(flat)
     with open(output_file, 'wb') as f:
         f.write(raw)
 

@@ -37,11 +37,9 @@
         button:hover { background: var(--accent-green-hover); }
         .status { margin-top: 8px; color: #3fb950; font-size: 0.8rem; font-weight: bold; min-height: 16px; word-break: break-all; }
         .info-box { background: rgba(88,166,255,0.05); border-left: 3px solid var(--accent-blue); padding: 8px 10px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; border-radius: 0 6px 6px 0; }
-        
         .tooltip-box { display: none; background: rgba(13,17,23,0.95); border: 1px solid var(--accent-blue); padding: 10px; border-radius: 6px; font-size: 0.75rem; color: var(--text-main); margin-bottom: 10px; }
         .tooltip-box.active { display: block; }
         .tooltip-box b { color: var(--accent-blue); }
-
         .visualizer-container { margin-top: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: 10px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
         .visualizer-container h3 { font-size: 0.78rem; color: var(--accent-warn); margin-bottom: 6px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         canvas.preview-canvas { width: 100%; height: 50px; background: #000; border-radius: 4px; display: block; image-rendering: pixelated; margin-bottom: 6px; }
@@ -155,25 +153,23 @@
             logEl.innerText = `> ${msg}\n` + logEl.innerText;
         }
 
-        async function createHeader(fileName, rawDataLength, compressedLength) {
+        async function createHeader(fileName, rawData, compressed) {
             const encoder = new TextEncoder();
             const nameBytes = encoder.encode(fileName);
             if (nameBytes.length > 255) throw new Error("Filename exceeds 255 bytes");
             
-            const header = new Uint8Array(13 + nameBytes.length);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', rawData);
+            const hashArray = new Uint8Array(hashBuffer);
+            
+            const header = new Uint8Array(45 + nameBytes.length);
             header.set(MAGIC, 0);
             const view = new DataView(header.buffer);
             view.setUint8(4, nameBytes.length);
-            view.setUint32(5, compressedLength, false);
-            view.setUint32(9, rawDataLength, false);
-            header.set(nameBytes, 13);
+            view.setUint32(5, compressed.length, false);
+            view.setUint32(9, rawData.length, false);
+            header.set(hashArray, 13);
+            header.set(nameBytes, 45);
             return header;
-        }
-
-        async function sha256(buffer) {
-            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
         async function encodeFile() {
@@ -194,7 +190,7 @@
             const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
             logMessage('encode', `Compressed size: ${compressed.length} bytes`);
             
-            const header = await createHeader(file.name, raw.length, compressed.length);
+            const header = await createHeader(file.name, raw, compressed);
             const blob = new Uint8Array(header.length + compressed.length);
             blob.set(header, 0);
             blob.set(compressed, header.length);
@@ -332,19 +328,26 @@
             const nameLen = flat[4];
             const compLen = new DataView(flat.buffer).getUint32(5, false);
             const rawLen = new DataView(flat.buffer).getUint32(9, false);
+            const storedHashBytes = flat.slice(13, 45);
             
-            const fileNameBytes = flat.slice(13, 13 + nameLen);
+            const fileNameBytes = flat.slice(45, 45 + nameLen);
             const fileName = new TextDecoder().decode(fileNameBytes);
             logMessage('decode', `Extracted filename: "${fileName}" (Compressed size: ${compLen} bytes)`);
             
-            const compressed = flat.slice(13 + nameLen, 13 + nameLen + compLen);
+            const compressed = flat.slice(45 + nameLen, 45 + nameLen + compLen);
             logMessage('decode', 'Decompressing payload stream...');
             
             const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'));
             const raw = await new Response(stream).arrayBuffer();
             
-            const hash = await sha256(raw);
-            logMessage('decode', `SHA-256 Hash: ${hash}`);
+            const computedHashBuffer = await crypto.subtle.digest('SHA-256', raw);
+            const computedHashArray = new Uint8Array(computedHashBuffer);
+            for (let i = 0; i < 32; i++) {
+                if (computedHashArray[i] !== storedHashBytes[i]) {
+                    throw new Error("SHA-256 integrity check failed!");
+                }
+            }
+            logMessage('decode', 'SHA-256 cryptographic integrity verified successfully.');
 
             const blob = new Blob([raw]);
             const downloadUrl = URL.createObjectURL(blob);
