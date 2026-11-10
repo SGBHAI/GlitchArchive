@@ -71,9 +71,9 @@
             </div>
 
             <select id="encodeCarrier">
-                <option value="image">1. Lossless RGB Pixel Matrix (PNG)</option>
-                <option value="stream">2. Lossless Pixel Matrix (Stream)</option>
-                <option value="chess">3. Chess Game Notation (PGN)</option>
+                <option value="image">Lossless RGB Pixel Matrix (PNG)</option>
+                <option value="stream">Lossless Pixel Matrix (Stream)</option>
+                <option value="chess">Chess Game Notation (PGN)</option>
             </select>
             
             <label>Payload File</label>
@@ -158,14 +158,22 @@
         async function createHeader(fileName, rawDataLength, compressedLength) {
             const encoder = new TextEncoder();
             const nameBytes = encoder.encode(fileName);
-            const header = new Uint8Array(11 + nameBytes.length);
+            if (nameBytes.length > 255) throw new Error("Filename exceeds 255 bytes");
+            
+            const header = new Uint8Array(13 + nameBytes.length);
             header.set(MAGIC, 0);
             const view = new DataView(header.buffer);
             view.setUint8(4, nameBytes.length);
             view.setUint32(5, compressedLength, false);
-            view.setUint16(9, rawDataLength, false);
-            header.set(nameBytes, 11);
+            view.setUint32(9, rawDataLength, false);
+            header.set(nameBytes, 13);
             return header;
+        }
+
+        async function sha256(buffer) {
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
         async function encodeFile() {
@@ -238,7 +246,7 @@
                 for (let i = 0; i < blob.length; i++) binaryString += String.fromCharCode(blob[i]);
                 const encodedData = btoa(binaryString);
                 
-                const pgnContent = `[Event "GlitchArchive Secure Vault"]\n[Site "Local Browser"]\n[Date "${new Date().toISOString().slice(0,10)}"]\n[PayloadData "${encodedData}"]\n\n1. e4 e5 2. Nf3 Nc6 *`;
+                const pgnContent = `[Event "GlitchArchive Secure Vault"]\n[Site "Local Browser"]\n[Date "${new Date().toISOString().slice(0,10)}"]\n[PayloadData "${encodedData}"]\n\ne4 e5 2. Nf3 Nc6 *`;
                 const blobFile = new Blob([pgnContent], { type: 'text/plain' });
                 const url = URL.createObjectURL(blobFile);
                 const a = document.createElement('a');
@@ -323,18 +331,21 @@
             
             const nameLen = flat[4];
             const compLen = new DataView(flat.buffer).getUint32(5, false);
-            const rawLen = new DataView(flat.buffer).getUint16(9, false);
+            const rawLen = new DataView(flat.buffer).getUint32(9, false);
             
-            const fileNameBytes = flat.slice(11, 11 + nameLen);
+            const fileNameBytes = flat.slice(13, 13 + nameLen);
             const fileName = new TextDecoder().decode(fileNameBytes);
             logMessage('decode', `Extracted filename: "${fileName}" (Compressed size: ${compLen} bytes)`);
             
-            const compressed = flat.slice(11 + nameLen, 11 + nameLen + compLen);
+            const compressed = flat.slice(13 + nameLen, 13 + nameLen + compLen);
             logMessage('decode', 'Decompressing payload stream...');
             
             const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'));
             const raw = await new Response(stream).arrayBuffer();
             
+            const hash = await sha256(raw);
+            logMessage('decode', `SHA-256 Hash: ${hash}`);
+
             const blob = new Blob([raw]);
             const downloadUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -342,7 +353,7 @@
             a.download = fileName;
             a.click();
             status.innerText = `Success: Recovered "${fileName}" from ${carrierName}!`;
-            logMessage('decode', `Success! Restored file downloaded. Exact byte integrity validated.`);
+            logMessage('decode', `Success! Restored file downloaded. SHA-256 verified.`);
         }
     </script>
 </body>
